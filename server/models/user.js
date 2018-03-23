@@ -46,16 +46,25 @@ UserSchema.methods.generateAuthToken = function () {
   var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
 
   user.tokens = user.tokens.concat([{
- access: access,
- token: token
-}]);
+   access: access,
+   token: token
+  }]);
 
   return user.save().then(() => {
     return token;
   });
 };
-//static method: just like java. don't need an Object
-//to call a  static method. Just pass in something
+
+UserSchema.methods.removeToken = function (token) {
+  var user = this;
+
+  return user.update({
+    $pull: {
+      tokens: {token}
+    }
+  });
+};
+
 UserSchema.statics.findByToken = function (token) {
   var User = this;
   var decoded;
@@ -73,30 +82,26 @@ UserSchema.statics.findByToken = function (token) {
   });
 };
 
-  UserSchema.statics.findByCredentials = function (email, password) {
-    var User = this;
+UserSchema.statics.findByCredentials = function (email, password) {
+  var User = this;
 
-    return User.findOne({email}).then((user) => {
-      if (!user){
-        return Promise.reject();
-      }
+  return User.findOne({email}).then((user) => {
+    if (!user) {
+      return Promise.reject();
+    }
 
-      return new Promise((resolve, reject) => {
-        bcrypt.compare(password, user.password, (err, res) => {
-          if (res) {
-            resolve(user);
-          }else {
-            reject();
-          }
-        });
+    return new Promise((resolve, reject) => {
+      // Use bcrypt.compare to compare password and user.password
+      bcrypt.compare(password, user.password, (err, res) => {
+        if (res) {
+          resolve(user);
+        } else {
+          reject();
+        }
       });
     });
-  };
-
-
-
-
-
+  });
+};
 
 UserSchema.pre('save', function (next) {
   var user = this;
