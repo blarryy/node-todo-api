@@ -15,7 +15,7 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.post('/todos',authenticate,  (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
   var todo = new Todo({
     text: req.body.text,
     _creator: req.user._id
@@ -28,7 +28,7 @@ app.post('/todos',authenticate,  (req, res) => {
   });
 });
 
-app.get('/todos',authenticate, (req, res) => {
+app.get('/todos', authenticate, (req, res) => {
   Todo.find({
     _creator: req.user._id
   }).then((todos) => {
@@ -38,7 +38,7 @@ app.get('/todos',authenticate, (req, res) => {
   });
 });
 
-app.get('/todos/:id',authenticate, (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) {
@@ -59,14 +59,14 @@ app.get('/todos/:id',authenticate, (req, res) => {
   });
 });
 
-app.delete('/todos/:id',authenticate, (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
 
-  Todo.findByIdAndRemove({
+  Todo.findOneAndRemove({
     _id: id,
     _creator: req.user._id
   }).then((todo) => {
@@ -80,7 +80,7 @@ app.delete('/todos/:id',authenticate, (req, res) => {
   });
 });
 
-app.patch('/todos/:id',authenticate, (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
   var body = _.pick(req.body, ['text', 'completed']);
 
